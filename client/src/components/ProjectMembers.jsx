@@ -35,11 +35,6 @@ function ProjectMembers({ project, onBack }) {
         }
     };
 
-    const getUserName = (userId) => {
-        const user = users.find((u) => u._id === userId);
-        return user ? user.username : "Unknown";
-    };
-
     const handleAddMember = async (e) => {
         e.preventDefault();
         setMessage("");
@@ -96,6 +91,10 @@ function ProjectMembers({ project, onBack }) {
         }
     };
 
+    const availableUsers = users.filter(user => 
+        !members.some(member => member._id === user._id)
+    );
+
     if (!project) {
         return <p>No project selected</p>;
     }
@@ -104,7 +103,7 @@ function ProjectMembers({ project, onBack }) {
         <div>
             <button onClick={onBack}>Back to Projects</button>
             <h2>Project Members: {project.name}</h2>
-            {message && <p>{message}</p>}
+            {message && <p style={{ color: message.includes("success") ? "green" : "red" }}>{message}</p>}
 
             <h3>Add Member</h3>
             <form onSubmit={handleAddMember}>
@@ -114,7 +113,7 @@ function ProjectMembers({ project, onBack }) {
                     required
                 >
                     <option value="">Select a user</option>
-                    {users.map((user) => (
+                    {availableUsers.map((user) => (
                         <option key={user._id} value={user._id}>
                             {user.username}
                         </option>
@@ -130,10 +129,14 @@ function ProjectMembers({ project, onBack }) {
                 <ul>
                     {members.map((member) => (
                         <li key={member._id}>
-                            {getUserName(member.user_id)}
-                            {member.user_id !== project.project_lead_id && (
+                            {/* We now use member.username because the backend returns the user object directly */}
+                            {member.username || member.f_name || "Unknown User"}
+                            
+                            {/* Compare member._id instead of member.user_id */}
+                            {member._id !== project.project_lead_id && (
                                 <button
-                                    onClick={() => handleRemoveMember(member.user_id)}
+                                    onClick={() => handleRemoveMember(member._id)}
+                                    style={{ marginLeft: "10px" }}
                                 >
                                     Remove
                                 </button>
